@@ -1,8 +1,10 @@
 package com.github.thake.kafka.avro4k.serializer
 
+import com.github.avrokotlin.avro4k.AvroAlias
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.descriptors.SerialDescriptor
+import org.apache.avro.reflect.AvroAliases
 
 /**
  * original authors:
@@ -28,9 +30,8 @@ class AnnotationExtractor(private val annotations: List<Annotation>) {
         // get the @SerialName annotation and get the name from it
         annotations.find { it is SerialName }?.let { (it as SerialName).value.split('.').last() }
     fun serializableNames(): List<String> =
-        if(annotations.any { it is SerialName }){
-            annotations.filterIsInstance<SerialName>().map { it.value }
-        }else{
-            emptyList()
-        }
+        annotations.filterIsInstance<SerialName>().map { it.value } +
+            annotations.filterIsInstance<AvroAlias>().flatMap { it.value.toList() } +
+                annotations.filterIsInstance<org.apache.avro.reflect.AvroAlias>().map { it.alias } +
+                    annotations.filterIsInstance<AvroAliases>().map { it.value.map { it.alias } }.flatten()
 }

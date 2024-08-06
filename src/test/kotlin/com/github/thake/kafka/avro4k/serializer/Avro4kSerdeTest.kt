@@ -20,7 +20,7 @@ class Avro4kSerdeTest {
                 TestRecordWithNull(null, 2),
                 TestRecordWithNull("33", 1),
                 TestRecordWithNamespace(4f),
-                TestRecordWithDifferentName(2.0),
+                TestRecordWithManyAliases(2.0),
                 1,
                 2.0,
                 "STR",

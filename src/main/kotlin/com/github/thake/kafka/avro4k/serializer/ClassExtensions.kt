@@ -14,7 +14,7 @@ val Class<*>.avroRecordNames: Set<String>
         val descriptor = this.kotlin.serializer().descriptor
         val naming = RecordNaming(descriptor)
         val aliases = AnnotationExtractor(annotations.toList()).serializableNames()
-        val normalNameMapping = "${naming.namespace}.${naming.name}"
+        val normalNameMapping = if(naming.namespace.isNotBlank()) "${naming.namespace}.${naming.name}" else naming.name
         return if (aliases.isNotEmpty()) {
             val mappings = mutableSetOf(normalNameMapping)
             aliases.forEach { alias ->

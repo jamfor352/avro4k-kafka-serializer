@@ -17,8 +17,9 @@ class RecordLookup(
     private val recordNameToType: Map<String, Class<*>> by lazy {
         if (recordPackages.isNotEmpty()) {
             val annotationNames = arrayOf(
-                AvroAlias::class,
+                org.apache.avro.reflect.AvroAlias::class,
                 AvroAliases::class,
+                AvroAlias::class,
                 AvroName::class,
                 SerialName::class
             ).map { it.java.name }

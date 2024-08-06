@@ -28,7 +28,7 @@ class KafkaAvro4kSerializerTest {
                 TestRecordWithNull(null, 2),
                 TestRecordWithNull("33", 1),
                 TestRecordWithNamespace(4.0f),
-                TestRecordWithDifferentName(2.0)
+                TestRecordWithManyAliases(2.0)
             )
         }
     }
