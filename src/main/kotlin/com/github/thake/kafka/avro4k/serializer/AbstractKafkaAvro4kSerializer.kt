@@ -2,7 +2,6 @@ package com.github.thake.kafka.avro4k.serializer
 
 
 import com.github.avrokotlin.avro4k.Avro
-import com.github.avrokotlin.avro4k.io.AvroEncodeFormat
 import io.confluent.kafka.serializers.NonRecordContainer
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -60,10 +59,7 @@ abstract class AbstractKafkaAvro4kSerializer(private val avro: Avro) : AbstractK
             if (obj is NonRecordContainer) obj.value else obj
         if (currentSchema.type == Schema.Type.RECORD) {
             @Suppress("UNCHECKED_CAST")
-            avro.openOutputStream(value::class.serializer() as KSerializer<Any>) {
-                encodeFormat = AvroEncodeFormat.Binary
-                schema = currentSchema
-            }.to(out).write(obj).close()
+            out.write(avro.encodeToByteArray(value::class.serializer() as KSerializer<Any>, value))
         } else {
             val encoder = EncoderFactory.get().directBinaryEncoder(out, null)
             val datumWriter = GenericDatumWriter<Any>(currentSchema)

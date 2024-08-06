@@ -1,7 +1,4 @@
-@file:Suppress("UnstableApiUsage")
-
-group = "com.github.thake.avro4k"
-val javaCompatibility = "1.8"
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `java-library`
@@ -16,10 +13,51 @@ plugins {
     alias(libs.plugins.release)
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+        freeCompilerArgs.add("-Xopt-in=kotlin.RequiresOptIn")
+    }
+}
+
+group = "com.github.thake.avro4k"
+
 repositories {
     mavenCentral()
     mavenLocal()
     maven("https://packages.confluent.io/maven/")
+}
+
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        compileClasspath += sourceSets.test.get().output
+        runtimeClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.test.get().output
+        kotlin.srcDirs("src/integrationTest/kotlin")
+        resources.srcDirs("src/integrationTest/resources")
+    }
+}
+
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+
+val integrationTestRuntimeOnly: Configuration by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
+
+val integrationTest = tasks.register("integrationTest", Test::class) {
+    description = "Runs integration tests."
+    group = "verification"
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    useJUnitPlatform()
 }
 
 dependencies {
@@ -35,11 +73,13 @@ dependencies {
     implementation(libs.retry)
     testImplementation(libs.bundles.test)
     testRuntimeOnly(libs.junit.runtime)
+    integrationTestImplementation(libs.bundles.logging)
+    integrationTestImplementation(libs.bundles.integrationTest)
 
 }
 // Configure existing Dokka task to output HTML to typical Javadoc directory
 tasks.dokkaHtml.configure {
-    outputDirectory.set(buildDir.resolve("javadoc"))
+    outputDirectory.set(layout.buildDirectory.dir("javadoc").get().asFile)
 }
 
 // Create dokka Jar task from dokka task output
@@ -56,45 +96,18 @@ testing {
         val test by getting(JvmTestSuite::class) {
             useJUnitJupiter()
         }
-        val integrationTest by registering(JvmTestSuite::class) {
-
-            dependencies {
-                implementation(project)
-                implementation(libs.testcontainers)
-                implementation(libs.testcontainers.kafka)
-                implementation(libs.kafka.streams)
-                implementation(libs.kotlinx.serialization)
-                implementation(libs.bundles.test)
-                implementation(libs.bundles.logging)
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        shouldRunAfter(test)
-                    }
-                }
-            }
-        }
     }
 }
 
 tasks {
-    compileJava {
-        targetCompatibility = javaCompatibility
+    named<Copy>("processIntegrationTestResources") {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
-    compileKotlin {
-        kotlinOptions.jvmTarget = javaCompatibility
-        kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    }
-    compileTestJava {
-        targetCompatibility = javaCompatibility
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = javaCompatibility
+    check {
+        dependsOn(integrationTest)
     }
     beforeReleaseBuild {
-        dependsOn(testing.suites.named("integrationTest"))
+        dependsOn(integrationTest)
     }
 
     idea {
@@ -158,11 +171,13 @@ publishing{
         }
     }
 }
+
 signing {
     useGpgCmd()
     isRequired = !isSnapshot
     sign(publishing.publications["mavenJava"])
 }
+
 tasks.named("afterReleaseBuild") {
     dependsOn("publish")
 }

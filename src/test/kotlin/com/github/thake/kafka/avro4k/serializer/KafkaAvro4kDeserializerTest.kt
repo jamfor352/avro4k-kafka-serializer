@@ -2,6 +2,7 @@ package com.github.thake.kafka.avro4k.serializer
 
 
 import com.github.avrokotlin.avro4k.Avro
+import com.github.thake.kafka.avro4k.serializer.Package.PACKAGE_NAME
 import io.confluent.kafka.schemaregistry.avro.AvroSchema
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
@@ -34,11 +35,11 @@ class KafkaAvro4kDeserializerTest {
             mapOf(
                 AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS to "true",
                 AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to "mock://registry",
-                KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to this::class.java.packageName,
+                KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to PACKAGE_NAME,
             ),
             false
         )
-        val avroSchema = Avro.Companion.default.schema(DeserializerTestRecord.serializer())
+        val avroSchema = Avro.Default.schema(DeserializerTestRecord.serializer().descriptor)
         val unionSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), avroSchema)
         val schemaId = 1
         val buffer = ByteBuffer.allocate(8)
@@ -61,11 +62,11 @@ class KafkaAvro4kDeserializerTest {
             mapOf(
                 AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS to "true",
                 AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to "mock://registry",
-                KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to this::class.java.packageName,
+                KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to PACKAGE_NAME,
             ),
             false
         )
-        val avroSchema = Avro.Companion.default.schema(DeserializerTestRecord.serializer())
+        val avroSchema = Avro.Default.schema(DeserializerTestRecord.serializer().descriptor)
         val unionSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), avroSchema)
         val topic = "My-Topic"
         val subject = "$topic-value"

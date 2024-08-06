@@ -2,11 +2,11 @@ package com.github.thake.kafka.avro4k.serializer
 
 
 import com.github.avrokotlin.avro4k.AvroAlias
-import com.github.avrokotlin.avro4k.AvroAliases
-import com.github.avrokotlin.avro4k.AvroName
-import com.github.avrokotlin.avro4k.AvroNamespace
 import io.github.classgraph.ClassGraph
+import kotlinx.serialization.SerialName
 import org.apache.avro.Schema
+import org.apache.avro.reflect.AvroAliases
+import org.apache.avro.reflect.AvroName
 import org.apache.avro.specific.SpecificData
 
 class RecordLookup(
@@ -17,10 +17,10 @@ class RecordLookup(
     private val recordNameToType: Map<String, Class<*>> by lazy {
         if (recordPackages.isNotEmpty()) {
             val annotationNames = arrayOf(
-                AvroName::class,
-                AvroNamespace::class,
                 AvroAlias::class,
-                AvroAliases::class
+                AvroAliases::class,
+                AvroName::class,
+                SerialName::class
             ).map { it.java.name }
             val avroTypes = ClassGraph().enableClassInfo().enableAnnotationInfo().ignoreClassVisibility()
                 .acceptClasses(*annotationNames.toTypedArray())

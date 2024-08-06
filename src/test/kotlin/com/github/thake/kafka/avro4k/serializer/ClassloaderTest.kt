@@ -1,6 +1,7 @@
 package com.github.thake.kafka.avro4k.serializer
 
 
+import com.github.thake.kafka.avro4k.serializer.Package.PACKAGE_NAME
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import kotlinx.serialization.Serializable
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,7 +19,7 @@ data class SimpleTest(
 
 class ClassloaderTest {
     private val config: Map<String, String> = mapOf(
-        KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to this::class.java.packageName,
+        KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to PACKAGE_NAME,
         AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to "mock://registry"
     )
     private val serializer = KafkaAvro4kSerializer(null, config).apply { configure(config, false) }

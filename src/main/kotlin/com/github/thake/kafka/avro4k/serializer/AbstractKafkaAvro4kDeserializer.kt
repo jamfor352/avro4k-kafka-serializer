@@ -2,7 +2,7 @@ package com.github.thake.kafka.avro4k.serializer
 
 
 import com.github.avrokotlin.avro4k.Avro
-import com.github.avrokotlin.avro4k.io.AvroDecodeFormat
+import com.google.common.io.ByteStreams
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
@@ -33,9 +33,6 @@ abstract class AbstractKafkaAvro4kDeserializer(private val avro: Avro) : Abstrac
 
     protected fun configure(config: KafkaAvro4kDeserializerConfig) {
         val configuredPackages = config.getRecordPackages()
-        if (configuredPackages.isEmpty()) {
-            throw IllegalArgumentException("${KafkaAvro4kDeserializerConfig.RECORD_PACKAGES} is not set correctly.")
-        }
         recordPackages = configuredPackages
         super.configure(config)
     }
@@ -88,7 +85,7 @@ abstract class AbstractKafkaAvro4kDeserializer(private val avro: Avro) : Abstrac
 
     private fun deserialize(writerSchema: Schema, readerSchema: Schema?, bytes: InputStream) =
         when (writerSchema.type) {
-            Schema.Type.BYTES -> bytes.readAllBytes()
+            Schema.Type.BYTES -> ByteStreams.toByteArray(bytes)
             Schema.Type.UNION -> deserializeUnion(writerSchema, readerSchema, bytes)
             Schema.Type.RECORD -> deserializeRecord(writerSchema, readerSchema, bytes)
             else -> {
@@ -110,12 +107,11 @@ abstract class AbstractKafkaAvro4kDeserializer(private val avro: Avro) : Abstrac
         bytes: InputStream
     ): Any {
         val deserializedClass = getDeserializedClass(writerSchema)
-        return avro.openInputStream(deserializedClass.serializer()) {
-            decodeFormat = AvroDecodeFormat.Binary(
-                writerSchema = writerSchema,
-                readerSchema = readerSchema ?: avroSchemaUtils.getSchema(deserializedClass)
-            )
-        }.from(bytes).nextOrThrow()
+        return avro.decodeFromByteArray(
+            readerSchema ?: avroSchemaUtils.getSchema(deserializedClass),
+            deserializedClass.serializer(),
+            ByteStreams.toByteArray(bytes)
+        )
     }
 
     private fun getLookup(contextClassLoader: ClassLoader) = Companion.getLookup(recordPackages, contextClassLoader)

@@ -1,11 +1,9 @@
 package com.github.thake.kafka.avro4k.serializer
 
 
-import com.github.avrokotlin.avro4k.AvroName
-import com.github.avrokotlin.avro4k.AvroNamespace
+import com.github.thake.kafka.avro4k.serializer.Package.PACKAGE_NAME
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.kotest.matchers.types.shouldBeInstanceOf
-import kotlinx.serialization.Serializable
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
@@ -13,25 +11,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 class Avro4kSerdeTest {
-    @Serializable
-    private data class TestRecord(
-        val str : String
-    )
-    @Serializable
-    private data class TestRecordWithNull(
-        val nullableStr : String? = null,
-        val intValue : Int
-    )
-    @Serializable
-    @AvroNamespace("custom.namespace.serde")
-    private data class TestRecordWithNamespace(
-        val float : Float
-    )
-    @Serializable
-    @AvroName("AnotherName")
-    private data class TestRecordWithDifferentName(
-        val double : Double
-    )
 
     companion object{
         @JvmStatic
@@ -57,7 +36,7 @@ class Avro4kSerdeTest {
     @MethodSource("createSerializableObjects")
     fun testRecordSerDeRoundtrip(toSerialize: Any) {
         val config = mapOf(
-            KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to this::class.java.packageName,
+            KafkaAvro4kDeserializerConfig.RECORD_PACKAGES to PACKAGE_NAME,
             AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG to "mock://registry"
         )
         val serde = Avro4kSerde<Any>()

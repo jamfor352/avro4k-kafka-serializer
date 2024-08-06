@@ -2,8 +2,6 @@ package com.github.thake.kafka.avro4k.serializer
 
 
 import com.github.avrokotlin.avro4k.Avro
-import com.github.avrokotlin.avro4k.AvroName
-import com.github.avrokotlin.avro4k.AvroNamespace
 import io.confluent.kafka.schemaregistry.ParsedSchema
 import io.confluent.kafka.schemaregistry.avro.AvroSchema
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient
@@ -11,7 +9,6 @@ import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.kotest.matchers.shouldBe
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.serialization.Serializable
 import org.apache.avro.Schema
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -22,25 +19,6 @@ import java.util.stream.Stream
 
 class KafkaAvro4kSerializerTest {
     private val registryMock = spyk(MockSchemaRegistryClient())
-    @Serializable
-    private data class TestRecord(
-        val str : String
-    )
-    @Serializable
-    private data class TestRecordWithNull(
-        val nullableStr : String? = null,
-        val intValue : Int
-    )
-    @Serializable
-    @AvroNamespace("custom.namespace")
-    private data class TestRecordWithNamespace(
-        val float : Double
-    )
-    @Serializable
-    @AvroName("AnotherName")
-    private data class TestRecordWithDifferentName(
-        val double : Double
-    )
 
     companion object{
         @JvmStatic
@@ -49,7 +27,7 @@ class KafkaAvro4kSerializerTest {
                 TestRecord("STTR"),
                 TestRecordWithNull(null, 2),
                 TestRecordWithNull("33", 1),
-                TestRecordWithNamespace(4.0),
+                TestRecordWithNamespace(4.0f),
                 TestRecordWithDifferentName(2.0)
             )
         }
@@ -65,7 +43,7 @@ class KafkaAvro4kSerializerTest {
             ),
             false
         )
-        val avroSchema = Avro.default.schema(TestRecord.serializer())
+        val avroSchema = Avro.Default.schema(TestRecord.serializer().descriptor)
         val unionSchema = Schema.createUnion(Schema.create(Schema.Type.NULL), avroSchema)
         val topic = "My-Topic"
         val subjectName = "$topic-value"

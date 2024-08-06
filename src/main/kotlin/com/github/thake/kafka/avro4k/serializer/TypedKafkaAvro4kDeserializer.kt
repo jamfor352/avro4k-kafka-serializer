@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 class TypedKafkaAvro4kDeserializer<T : Any>(
     private val type: Class<T>, client : SchemaRegistryClient? = null,
-    avro: Avro = Avro.default
+    avro: Avro = Avro.Default
 ) : AbstractKafkaAvro4kDeserializer(avro), Deserializer<T> {
     private val typeNames = type.avroRecordNames
     init {
@@ -22,6 +22,10 @@ class TypedKafkaAvro4kDeserializer<T : Any>(
         } else {
             throw SerializationException("Could not convert to type $type with schema record name ${msgSchema.fullName}")
         }
+    }
+
+    override fun close() {
+        // No resources to close
     }
 
     override fun deserialize(topic: String?, data: ByteArray?): T? {

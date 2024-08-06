@@ -5,7 +5,7 @@ import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
-class ConfluentCluster(confluentVersion: String) {
+class ConfluentCluster(confluentVersion: String): AutoCloseable{
 
     private val kafkaContainer =
         KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:$confluentVersion"))
@@ -26,7 +26,7 @@ class ConfluentCluster(confluentVersion: String) {
     val schemaRegistryUrl = "http://${schemaRegistry.host}:${schemaRegistry.getMappedPort(8081)}"
     val bootstrapServers = kafkaContainer.bootstrapServers
 
-    fun stop() {
+    override fun close() {
         schemaRegistry.stop()
         kafkaContainer.stop()
     }

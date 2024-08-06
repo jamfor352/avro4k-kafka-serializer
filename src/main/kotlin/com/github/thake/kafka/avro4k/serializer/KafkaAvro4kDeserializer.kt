@@ -8,7 +8,7 @@ import org.apache.kafka.common.serialization.Deserializer
 class KafkaAvro4kDeserializer(
     client: SchemaRegistryClient? = null,
     props: Map<String, *>? = null,
-    avro: Avro = Avro.default
+    avro: Avro = Avro.Default
 ) : AbstractKafkaAvro4kDeserializer(avro), Deserializer<Any?> {
     private var isKey = false
 

@@ -31,7 +31,7 @@ class Avro4kSchemaUtils(private val avro: Avro) {
             Double::class.isSuperclassOf(clazz) -> DOUBLE_SCHEMA
             CharSequence::class.isSuperclassOf(clazz) -> STRING_SCHEMA
             ByteArray::class.isSuperclassOf(clazz) -> BYTES_SCHEMA
-            else -> cachedSchemas.computeIfAbsent(clazz) { avro.schema(it.serializer()) }
+            else -> cachedSchemas.computeIfAbsent(clazz) { avro.schema(it.serializer().descriptor) }
         }
     }
 
